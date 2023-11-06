@@ -1,0 +1,92 @@
+{
+    "request": [
+        {
+            "flightInfo": {
+                "bookingReference": "B2BE2ETLP1"
+            },
+            "journey": [
+                {
+                    "arrivalDetails": {
+                        "airportCode": "LHR",
+                        "airportName": "Heathrow (LHR) London United Kingdom"
+                    },
+                    "departureDetails": {
+                        "airportCode": "DUB",
+                        "airportName": "Dublin International (DUB) Dublin Ireland",
+                        "dateLocal": "2023-06-06",
+                        "timeLocal": "19:55"
+                    },
+                    "carrierCode": "BA",
+                    "carrierName": "British Airways",
+                    "flightNumber": "BA823",
+                    "legId": 1
+                }
+            ],
+            "passengers": {
+                "passengerNames": [
+                    {
+                        "firstName": "PassFN1",
+                        "lastName": "PassLN1"
+                    }
+                ]
+            },
+            "transit": false
+        },
+        {
+            "flightInfo": {
+                "bookingReference": "B2BE2ETLP2"
+            },
+            "journey": [
+                {
+                    "arrivalDetails": {
+                        "airportCode": "FRA",
+                        "airportName": "Frankfurt am Main Airport (FRA) Frankfurt Germany"
+                    },
+                    "departureDetails": {
+                        "airportCode": "LOS",
+                        "airportName": "Murtala Muhammed International Airport (LOS) Lagos Nigeria",
+                        "dateLocal": "2023-02-04",
+                        "timeLocal": "23:10"
+                    },
+                    "carrierCode": "BA",
+                    "carrierName": "Lufthansa",
+                    "flightNumber": "LH569",
+                    "legId": 1
+                }
+            ],
+            "passengers": {
+                "passengerNames": [
+                    {
+                        "firstName": "PassFN2",
+                        "lastName": "PassLN2"
+                    }
+                ]
+            },
+            "transit": false
+        },
+        {
+            "flightInfo": {
+                "bookingReference": "B2BE2ETLP3"
+            },
+            "journey": [
+                {
+                    "arrivalDetails": {
+                        "airportCode": "GOA",
+                        "airportName": "Genoa Cristoforo Colombo Airport (GOA) Genoa Italy"
+                    },
+                    "departureDetails": {
+                        "airportCode": "STN",
+                        "airportName": "London Stansted Airport (STN) London United Kingdom",
+                        "dateLocal": "2023-01-29",
+                        "timeLocal": "12:29"
+                    },
+                    "carrierCode": "LR",
+                    "carrierName": "",
+                    "flightNumber": "LR972",
+                    "legId": 1
+                }
+            ],
+            "transit": false
+        }
+    ]
+}
