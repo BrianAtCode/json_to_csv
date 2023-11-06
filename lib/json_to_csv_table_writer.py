@@ -1,3 +1,16 @@
+"""
+Converts JSON data to CSV format by first normalizing the JSON into a structured list of objects, with unique IDs and parent-child relationships. 
+
+The structured JSON can then be written out to multiple CSV files, one per JSON array/table. Before writing, the structured JSON is standardized by filling any missing fields across rows.
+
+Parameters:
+
+- source_data: The input nested JSON data to convert.
+
+- is_standardize: Whether to standardize the JSON rows before writing CSV.
+
+- has_random_id: Whether to generate random UUIDs for IDs instead of numeric IDs.
+"""
 from . import json_formatter
 from . import csv_file_manager
 from . import csv_transformer

@@ -1,8 +1,21 @@
+"""
+Deconstructs a nested JSON structure into tables and fields.
+
+The json_deconstructor class takes a nested JSON structure and extracts the table names and fields for each table. 
+
+The constructor initializes the instance with the provided nested JSON, empty dicts for tables and fields, and calls pre_load() to extract the table and field metadata.
+
+pre_load() recursively traverses the nested JSON, populating the tables and fields properties with the extracted info.
+
+tables contains the table names mapped to empty lists. 
+
+fields contains the field names for each table.
+
+The tables and fields properties provide read-only access to the extracted metadata.
+"""
+
 class json_deconstructor:
     def __init__(self, nested_json):
-        # Initializes a json_deconstructor instance with the provided nested JSON data.
-        # Stores the nested JSON, initializes empty dicts for tables and fields, 
-        # and calls pre_load() on the nested JSON to extract table and field info.
         self.nested_json = nested_json
         self.__tables = {}
         self.__fields = {}
@@ -11,8 +24,7 @@ class json_deconstructor:
     def pre_load(self, nested_json):
 
         def load_table(nested_json, name='root'):
-            #extract tables names
-            self.tables[name] = []
+            self.__tables[name] = []
             for key, value in nested_json.items():
                 if isinstance(value, dict):
                     load_table(value, key)
@@ -22,7 +34,7 @@ class json_deconstructor:
                             load_table(item, key)
 
         def load_fields(nested_json, name='root'):
-            self.fields[name] = []
+            self.__fields[name] = []
             for key, value in nested_json.items():
                 self.fields[name].append(key)
                 if isinstance(value, list):

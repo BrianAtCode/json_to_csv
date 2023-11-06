@@ -1,3 +1,17 @@
+"""
+The json_formatter class provides functionality to flatten nested JSON data into a normalized structure.
+
+The key methods are:
+
+- flatten_json: Flattens the nested JSON into a flat dictionary structure.
+
+- json_to_object_list: Converts the nested JSON into a normalized list of objects structure. This generates a structured format with unique IDs and parent-child relationships.
+
+- json_list_standardize: Standardizes the list of objects by filling in any missing fields. 
+
+The flattened or structured JSON data is stored in the store property.
+"""
+
 from . import json_deconstructor
 import uuid
 
@@ -58,7 +72,6 @@ class json_formatter:
                         self.__store[key][count][field] = ''
                         print('after append item',self.__store[key])
                 count+=1
-        #print('store',self.__store)
 
     def flatten_json(self, nested_json, name=''):
         if type(nested_json) is dict:
