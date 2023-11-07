@@ -11,7 +11,8 @@ response = requests.post('https://www.clp.com.hk/bin/calculator/tariff/residenti
 with open('./test/src/source.json', 'w') as f:
     f.write(response.text)
 
+output_path = './test/result'
 with open('./test/src/source.json') as f:
-    writer = single_csv_writer(f, file_name='./test/result/bill_data')
+    writer = single_csv_writer(f, output_path, file_name='bill_data')
     writer.transform()
     writer.write_to_file()

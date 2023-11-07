@@ -22,10 +22,12 @@ class csv_transformer(ABC):
     Attributes
     ------------------
         - __source_data (dict): The source JSON data to be transformed into CSV format.
+        - __output_path (str): The output path for the CSV file.
 
     Properties
     ------------------
         - source_data (dict): Property to access the source JSON data.
+        - output_path (str): Property to access the output path for the CSV file.
 
     Abstract Methods
     ------------------
@@ -58,22 +60,25 @@ class csv_transformer(ABC):
     ...         {"name": "Bob", "age": 25}
     ...     ]
     ... }
-    >>> transformer = MyCsvTransformer(source_data)
+    ... output_path = 'output_data/data'
+    >>> transformer = MyCsvTransformer(source_data, output_path)
     >>> transformer.transform()
     >>> transformer.write_to_file()
     """
-    def __init__(self, source_data: dict):
+    def __init__(self, source_data: dict, output_path: str = ''):
         """
         Initializes a csv_transformer instance with the source JSON data.
 
         Args:
             source_data (dict): The source JSON data to be transformed into CSV format.
+            output_path (str): The output path for the CSV file (default is '').
 
         Returns: None
 
         Example: None
         """
         self.__source_data = json.load(source_data)
+        self.__output_path = output_path
 
     @property
     def source_data(self) -> dict:
@@ -86,6 +91,18 @@ class csv_transformer(ABC):
         Example: None
         """
         return self.__source_data
+    
+    @property
+    def output_path(self) -> str:
+        """
+        Property to access the output path for the CSV file.
+
+        Returns:
+            str: The output path for the CSV file.
+
+        Example: None
+        """
+        return self.__output_path
 
     @abstractmethod
     def transform(self) -> None:
