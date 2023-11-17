@@ -77,8 +77,15 @@ class csv_transformer(ABC):
 
         Example: None
         """
-        print(type(source_data))
-        self.__source_data = json.load(source_data)
+        print(type(source_data).__name__)
+        if type(source_data).__name__== 'TextIOWrapper':
+            self.__source_data = json.load(source_data)
+        elif type(source_data).__name__== 'dict' or type(source_data).__name__== 'list':
+            self.__source_data = json.loads(json.dumps(source_data))
+        elif type(source_data).__name__== 'str':
+            self.__source_data = json.loads(source_data)
+        else:
+            raise TypeError("The source data must be a dict or a file-like object.")
         self.__output_path = output_path
 
     @property
