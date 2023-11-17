@@ -103,7 +103,7 @@ class table_writer(csv_transformer.csv_transformer):
         >>> # The data is written to separate CSV files for each table.
         """
         formatter = json_formatter.json_formatter(self.source_data,self.__has_random_id)
-        formatter.json_to_object__list(self.source_data)
+        formatter.json_to_object_list(self.source_data)
         if self.__is_standardize:
             formatter.json_list_standardize()
         self.__formatted_data = formatter.store
@@ -128,13 +128,22 @@ class table_writer(csv_transformer.csv_transformer):
         >>> writer.write_to_file()
         >>> # The data is written to a single CSV file.
         """
+        print('tw', self.__formatted_data)
         for key,value in self.__formatted_data.items():
             with csv_file_manager.csv_file_manager(self.output_path + "/" +key + '.csv', 'w') as csv_editor:
-                csv_editor.writerow(value[0].keys())
-                for item in value:
-                    csv_editor.writerow(item.values())
-        print(self.__formatted_data)
-
+                if len(value)>0:
+                    keys = value[0].keys()
+                    csv_editor.writerow(keys)
+                    for item in value:
+                        reproduce_obj = {}
+                        if item is not None and type(item) is dict:
+                            for key_item in keys:
+                                for record_key,record_value in item.items():
+                                    if record_key == key_item:
+                                        reproduce_obj[record_key] = record_value
+                                        break
+                            csv_editor.writerow(reproduce_obj.values())
+                                        
 class single_csv_writer(csv_transformer.csv_transformer):
     """
     A class for writing transformed data to a single CSV file.

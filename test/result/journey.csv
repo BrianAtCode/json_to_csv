@@ -1,0 +1,4 @@
+parent_id,journey_id,arrivalDetails,departureDetails,carrierCode,carrierName,flightNumber,legId
+journey_0,journey_0,arrivalDetails_0,departureDetails_0,BA,British Airways,BA823,1
+journey_1,journey_1,arrivalDetails_1,departureDetails_1,BA,Lufthansa,LH569,1
+journey_2,journey_2,arrivalDetails_2,departureDetails_2,LR,,LR972,1

@@ -1,0 +1,4 @@
+parent_id,arrivalDetails_id,airportCode,airportName
+journey_0,arrivalDetails_0,LHR,Heathrow (LHR) London United Kingdom
+journey_1,arrivalDetails_1,FRA,Frankfurt am Main Airport (FRA) Frankfurt Germany
+journey_2,arrivalDetails_2,GOA,Genoa Cristoforo Colombo Airport (GOA) Genoa Italy

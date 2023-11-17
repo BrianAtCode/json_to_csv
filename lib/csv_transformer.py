@@ -77,6 +77,7 @@ class csv_transformer(ABC):
 
         Example: None
         """
+        print(type(source_data))
         self.__source_data = json.load(source_data)
         self.__output_path = output_path
 

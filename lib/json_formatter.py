@@ -27,7 +27,7 @@ class json_formatter:
 
     Methods
     ------------------
-    1. `json_to_object__list(self, x, table_name: str = 'root', parent_id: str = '', id: str = None)`: 
+    1. `json_to_object_list(self, x, table_name: str = 'root', parent_id: str = '', id: str = None)`: 
     - Method to transform nested JSON data into a structured format.
     - Arguments:
         - `x`: The JSON data to transform.
@@ -54,7 +54,7 @@ class json_formatter:
     Typical Usage
     ------------------
     1. Create an instance of `json_formatter` with nested JSON data.
-    2. Use the `json_to_object__list` method to transform the data into a structured format.
+    2. Use the `json_to_object_list` method to transform the data into a structured format.
     3. Use the `json_list_standardize` method to standardize the data.
     4. Access the formatted data using the `store` property.
 
@@ -70,7 +70,7 @@ class json_formatter:
     ...     }
     ... }
     >>> formatter = json_formatter(nested_data, random_id=True)
-    >>> formatter.json_to_object__list(nested_data)
+    >>> formatter.json_to_object_list(nested_data)
     >>> formatter.json_list_standardize()
     >>> formatted_data = formatter.store
     """
@@ -87,75 +87,63 @@ class json_formatter:
         Example: None
         """
         self.json_handler = json_deconstructor.json_deconstructor(nested_json)
-        self.__store = {}
+        self.__store = self.json_handler.tables
         self.random_id = random_id
 
-    def json_to_object__list(self, x, table_name: str = 'root', parent_id: str = '', id: str = None):
-        """
-        Method to transform nested JSON data into a structured format.
-
-        Args:
-            x: The JSON data to transform.
-            table_name (str): The name of the table being processed.
-            parent_id (str): The parent ID of the current record.
-            id (str): The record ID.
-
-        Returns: None
-
-        Example: 
-            >>> source_data = {
-            ...     "table1": {
-            ...         "field1": [1, 2, 3],
-            ...         "field2": [4, 5, 6]
-            ...     }
-            ... }
-            >>> formatter = json_formatter(source_data)
-            >>> # Call the json_to_object__list method to transform the data.
-            >>> formatter.json_to_object__list(source_data, table_name='table1')
-            >>> # Access the transformed data using the store property.
-            >>> transformed_data = formatter.store
-            >>> # Verify the transformed data.
-            >>> print(transformed_data)
-            {'table1': [{'table1_id': 'table1_0', 'field1': 1, 'field2': 4}, {'table1_id': 'table1_1', 'field1': 2, 'field2': 5}, {'table1_id': 'table1_2', 'field1': 3, 'field2': 6}]}
-        """
-        if table_name=='root':
-            self.__store = self.json_handler.tables 
+    def json_to_object_list(self, x, table_name: str = 'root', parent_id: str = '', id: str = None):
 
         key_count = 0
-        rows = [{} if table_name == 'root' else {'parent_id': parent_id} ]
+        new_parent_id = parent_id if table_name != 'root' else ''
         if type(x) is dict:
-            rows[0][table_name+'_id'] = table_name +"_"+str(len(self.__store[table_name])) if self.random_id == False else str(uuid.uuid4()) if id == None else id
-            print(27, table_name+'_id', x)
-            for key,value in x.items():
-                if key == rows[0][table_name+'_id']:
-                    continue
-                if type(value) is dict:
-                    rows[0][key] = key+"_"+str(len(self.__store[key]))   if self.random_id == False else str(uuid.uuid4())
-                    self.json_to_object__list(value, key, rows[0][table_name+'_id'], rows[0][key])
-                elif type(value) is list:
-                    rows[0][key] = key+"_"+str(len(self.__store[key]))   if self.random_id == False else str(uuid.uuid4())
-                    self.json_to_object__list(value, key, rows[0][key], None)
-                else:
-                    rows[0][key] = value
-            self.__store[table_name].append(rows[0])
-        elif type(x) is list:
-            print(31, 'list')
-            rows = [{} if table_name == 'root' else {'parent_id': parent_id} for i in range(len(x))]
-            for a in x:
-                rows[key_count][table_name+'_id'] = table_name +"_"+str(len(self.__store[table_name]))  if self.random_id == False else str(uuid.uuid4()) if id == None else id
-                if type(a) is dict:
-                    for key,value in a.items():
-                        if type(value) is dict:
-                            rows[key_count][key] = key+"_"+str(len(self.__store[table_name]))  if self.random_id == False else str(uuid.uuid4())
-                            self.json_to_object__list(value, key, rows[key_count][table_name+'_id'], rows[key_count][key])
-                        elif type(value) is list:
-                            rows[key_count][key] = key+"_"+str(len(self.__store[table_name]))  if self.random_id == False else str(uuid.uuid4())
-                            self.json_to_object__list(value, key, rows[key_count][key], None)
-                        else:
-                            rows[key_count][key] = value
-                    self.__store[table_name].append(rows[key_count])
-                key_count += 1
+            json_object = {"parent_id":new_parent_id}
+            json_object[table_name+'_id'] = table_name +"_"+str(len(self.__store[table_name])) if self.random_id == False else str(uuid.uuid4()) if id == None else id
 
+            for key,value in x.items():
+                if key == json_object[table_name+'_id']:
+                    continue
+                
+                if type(value) is dict:
+                    json_object[key] =  key+"_"+str(len(self.__store[key]))  if self.random_id == False else str(uuid.uuid4())
+                    self.json_to_object_list(value, key, json_object[table_name+'_id'], json_object[key])
+
+                elif type(value) is list:
+                    pure_value = self.get_pure_value_from_object(key, value, table_name)
+                    if pure_value:
+                        json_object[key] = pure_value
+                    else:
+                        json_object[key] = key+"_"+str(len(self.__store[key]))   if self.random_id == False else str(uuid.uuid4())
+
+                    self.json_to_object_list(value, key, json_object[key], None)
+                else:
+                    json_object[key] = value
+            print('122', json_object)
+            for key in self.json_handler.fields[table_name]:
+                if key not in json_object.keys():
+                    json_object[key] = ''
+
+            self.__store[table_name].append(json_object)
+        elif type(x) is list:
+            list_and_dict_count = [type(next_value) for next_value in x].count(list) + [type(next_value) for next_value in x].count(dict)
+            if list_and_dict_count == 0:
+                return
+            
+            for a in x:
+                if type(a) is dict:
+                    self.json_to_object_list(a, table_name, parent_id, None)
+                elif type(a) is list:
+                    next_key = table_name+"_"+str(key_count)+"_"+str(len(self.__store[table_name]))  if self.random_id == False else str(uuid.uuid4())
+                    self.json_to_object_list(a, table_name+"_"+str(key_count), next_key, None)
+                key_count += 1
+    def get_pure_value(self, value):
+        return [type(next_value) for next_value in value].count(list) + [type(next_value) for next_value in value].count(dict)
+   
+    def get_pure_value_from_object(self,key, value, table_name ):
+        list_and_dict_count = self.get_pure_value(value)
+        if key not in self.__store[table_name] and list_and_dict_count == 0:
+            return ", ".join([str(new_val) for new_val in value]) 
+
+        return None
+    
     def json_list_standardize(self):
         """
         Method to standardize the formatted data to ensure consistent fields across records.
@@ -170,8 +158,8 @@ class json_formatter:
         ...     }
         ... }
         >>> formatter = json_formatter(source_data)
-        >>> # Call the json_to_object__list method to transform the data.
-        >>> formatter.json_to_object__list(source_data, table_name='table1')
+        >>> # Call the json_to_object_list method to transform the data.
+        >>> formatter.json_to_object_list(source_data, table_name='table1')
         >>> # Call the json_list_standardize method to standardize the fields.
         >>> formatter.json_list_standardize()
         >>> # Access the standardized data using the store property.
@@ -180,16 +168,15 @@ class json_formatter:
         >>> print(standardized_data)
         {'table1': [{'table1_id': 'table1_0', 'field1': 1, 'field2': 4}, {'table1_id': 'table1_1', 'field1': 2, 'field2': 5}, {'table1_id': 'table1_2', 'field1': 3, 'field2': 6}]}
         """
+        print('standard item',self.__store)
         for key, value in self.json_handler.fields.items():
             print('key', key, 'value', value)
             count = 0
             for item in self.__store[key]:
-                print('item',item)
                 for field in value:
-                    if field not in item:
-                        print('not in',field,field,self.__store[key][count])
-                        self.__store[key][count][field] = ''
-                        print('after append item',self.__store[key])
+                    if type(field) is not dict or type(field) is not list:
+                        if field not in item:
+                            self.__store[key][count][field] = ''
                 count+=1
 
     def flatten_json(self, nested_json, name: str = ''):

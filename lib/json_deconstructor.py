@@ -71,6 +71,8 @@ class json_deconstructor:
         self.nested_json = nested_json
         self.__tables = {}
         self.__fields = {}
+        
+        #self.check_pattern(self.nested_json)
         self.pre_load(nested_json)
 
     def pre_load(self, nested_json: dict):
@@ -105,35 +107,154 @@ class json_deconstructor:
         >>> print(extracted_fields)
         {'table1': ['field1', 'field2'], 'table2': ['field3', 'field4']}
         """
-        def load_table(nested_json, name='root'):
-            self.__tables[name] = []
-            for key, value in nested_json.items():
-                if isinstance(value, dict):
-                    load_table(value, key)
-                elif isinstance(value, list):
-                    for item in value:
+        def load_table(nested_json, name='root', is_nested_list = False):
+            if type(nested_json) is dict:
+                self.__tables[name] = []
+
+                for key, value in nested_json.items():
+                    if isinstance(value, dict):
+                        load_table(value, key)
+                    elif isinstance(value, list):
+                        list_count = 0
+                        for item in value:
+                            if isinstance(item, dict):
+                                load_table(item, key)
+                            elif isinstance(item, list):
+                                load_table(item, key+"_"+str(list_count))
+                            list_count += 1
+            elif type(nested_json) is list:
+                list_count = 0
+                if is_nested_list == False:
+                    for item in nested_json:
                         if isinstance(item, dict):
-                            load_table(item, key)
+                            load_table(item, name)
+                        elif isinstance(item, list):
+                            load_table(item, name+"_"+str(list_count))
+                        list_count += 1
+                else:
+                    self.__tables[name] = []
+                    for item in nested_json:
+                        if isinstance(item, dict):
+                            load_table(item, name)
+                        elif isinstance(item, list):
+                            load_table(item, name+"_"+str(list_count))
+                        list_count += 1
 
         def load_fields(nested_json, name='root'):
-            self.__fields[name] = []
-            for key, value in nested_json.items():
-                self.fields[name].append(key)
-                if isinstance(value, list):
-                    listLen = 0
-                    maxIndex = 0
-                    index = 0
-                    for item in value:
-                        if len(item) > listLen:
-                            listLen = len(item)
-                            maxIndex = index
-                        index += 1
-                    load_fields(value[maxIndex], key)
-                elif isinstance(value, dict):
-                    load_fields(value, key)
+            print('load field', self.__tables, name)
+            #if name not in self.__tables.keys():
+            #    return
+            if type(nested_json) is dict:
+                if name not in self.__tables:
+                    find_next_fields_from_object(nested_json,name)
+                    return
+                
+                if name not in self.__fields:
+                    self.__fields[name] = []
+                    self.__fields[name].append("parent_id")
+                    self.__fields[name].append(name+"_id")
 
+                
+                for key, value in nested_json.items():
+                    if key not in self.__fields[name]:
+                        self.fields[name].append(key)
+                
+                find_next_fields_from_object(nested_json,name)
+            elif type(nested_json) is list:
+                if is_pure_data_type(nested_json):
+                    return
+                
+                if name not in self.__tables:
+                    find_next_fields_from_list(nested_json,name)
+                    return
+                
+                if name not in self.__fields.keys():
+                    self.__fields[name] = []
+                    self.__fields[name].append("parent_id")
+                    self.__fields[name].append(name+"_id")
+
+                for item in extract_keys(nested_json):
+                    if item not in self.__fields[name]:
+                        self.__fields[name].append(item)   
+
+                find_next_fields_from_list(nested_json,name)
+
+        def find_next_fields(nested_json, name):
+            if isinstance(nested_json, list) or isinstance(nested_json, dict):
+                load_fields(nested_json,  name)
+
+        def find_next_fields_from_object(nested_json,name):
+            for key, value in nested_json.items():
+                load_fields(value, key)
+
+        def find_next_fields_from_list(nested_json,name):
+            list_count = 0
+            for item in nested_json:
+                find_next_fields(item,  name+"_"+str(list_count))
+                list_count += 1
+
+        def is_pure_data_type(json_list):
+            list_and_dict_count = [type(next_value) for next_value in json_list].count(list) + [type(next_value) for next_value in json_list].count(dict)
+            return list_and_dict_count == 0
+        
+        def extract_keys(json_list):
+            keys = set()
+
+            for item in json_list:
+                if isinstance(item, dict):
+                    keys.update(item.keys())
+
+            return list(keys)
         load_table(nested_json)
+        print('tables', self.__tables)
         load_fields(nested_json)
+        print('fields', self.__fields)
+    
+    def check_pattern(self, nested_json):
+        if type(nested_json) is dict:
+            for key, value in nested_json.items():
+                if isinstance(value, list):
+                    print (value)
+                    if self.is_same_pattern(value) == False:
+                        raise Exception("The nested JSON data is not in the same pattern.")
+                    else:
+                        self.check_pattern(value)
+                elif isinstance(value, dict):
+                    self.check_pattern(value)
+        elif type(nested_json) is list:
+            for item in nested_json:
+                if isinstance(item, dict):
+                    self.check_pattern(item)
+                elif isinstance(item, list):
+                    print ("list in",item)
+                    if self.is_same_pattern(item) == False:
+                        raise Exception("The nested JSON data is not in the same pattern.")
+                    else:
+                        self.check_pattern(item)
+        
+
+    def is_same_pattern(self, json_list):
+        print("is_same", isinstance(json_list, list), not json_list, type(json_list),isinstance(json_list, list))
+        if not isinstance(json_list, list):
+            print("eeeee", not json_list, not isinstance(json_list, list))
+            return False
+
+        pattern = None
+
+        for item in json_list:
+            if isinstance(item, dict):
+                current_pattern = tuple(sorted(item.keys()))
+            elif isinstance(item, list):
+                current_pattern = "list"
+            else:
+                current_pattern = "other"
+
+            if pattern is None:
+                pattern = current_pattern
+            elif pattern != current_pattern:
+                return False
+
+        return True
 
     @property
     def tables(self) -> dict:

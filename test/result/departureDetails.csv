@@ -1,0 +1,4 @@
+parent_id,departureDetails_id,airportCode,airportName,dateLocal,timeLocal
+journey_0,departureDetails_0,DUB,Dublin International (DUB) Dublin Ireland,2023-06-06,19:55
+journey_1,departureDetails_1,LOS,Murtala Muhammed International Airport (LOS) Lagos Nigeria,2023-02-04,23:10
+journey_2,departureDetails_2,STN,London Stansted Airport (STN) London United Kingdom,2023-01-29,12:29
