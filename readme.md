@@ -261,7 +261,7 @@ You can get or set some main variables before or after the transformation.
 4. **``manual_data``** - the manual data that you want to replace the source data
     - **type** : dict (default: None)
 
-**More examples can be found in the [test folder](https://github.com/BrianAtCode/json_to_csv/test)**
+**More examples can be found in the [test folder](https://github.com/BrianAtCode/json_to_csv/tree/main/test)**
 
 ## Do’s and Don’ts <a name = "dos_and_donts"></a>
 1. Do not use the same table name in different tables in **``source_data``** or **``manual_data``**
