@@ -65,6 +65,7 @@ class csv_transformer(ABC):
     >>> transformer.transform()
     >>> transformer.write_to_file()
     """
+
     def __init__(self, source_data: dict, output_path: str = ''):
         """
         Initializes a csv_transformer instance with the source JSON data.
@@ -77,17 +78,31 @@ class csv_transformer(ABC):
 
         Example: None
         """
-        print(type(source_data).__name__)
+        self.__output_path = output_path
+
+        if source_data is None:
+            return
+        decoder = json.JSONDecoder(object_pairs_hook=self.__checking_duplicate_value)
+
         if type(source_data).__name__== 'TextIOWrapper':
             self.__source_data = json.load(source_data)
         elif type(source_data).__name__== 'dict' or type(source_data).__name__== 'list':
             self.__source_data = json.loads(json.dumps(source_data))
+        elif type(source_data).__name__ == 'tuple':
+            to_dict = dict( (key ,value) for key,value in source_data)
+            self.__source_data = json.loads(json.dumps(to_dict))
         elif type(source_data).__name__== 'str':
-            self.__source_data = json.loads(source_data)
+            self.__source_data = decoder.decode(source_data)
         else:
             raise TypeError("The source data must be a dict or a file-like object.")
-        self.__output_path = output_path
 
+    def __checking_duplicate_value(self,pairs):
+        result = dict()
+        for key,val in pairs:
+            if key in result:
+                raise KeyError("Duplicate key specified: %s" % key)
+            result[key] = val
+        return result
     @property
     def source_data(self) -> dict:
         """
@@ -100,6 +115,20 @@ class csv_transformer(ABC):
         """
         return self.__source_data
     
+    @source_data.setter
+    def source_data(self, source_data: dict) -> None:
+        """
+        Property to set the source JSON data.
+
+        Args:
+            source_data (dict): The source JSON data to be transformed into CSV format.
+
+        Returns: None
+
+        Example: None
+        """
+        self.__source_data = source_data
+
     @property
     def output_path(self) -> str:
         """

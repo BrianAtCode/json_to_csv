@@ -22,7 +22,6 @@ class table_writer(csv_transformer.csv_transformer):
     Attributes
     ------------------
         - __has_random_id (bool): Flag to indicate whether to use random IDs for records.
-        - __is_standardize (bool): Flag to indicate whether to standardize the fields in the data.
         - __formatted_data (dict): A dictionary to store the formatted data.
 
     Methods
@@ -53,28 +52,32 @@ class table_writer(csv_transformer.csv_transformer):
     ...     }
     ... }
     >>> output_path = './test/result/table_data'
-    >>> writer = table_writer(source_data, output_path, has_random_id=True, is_standardize=True)
+    >>> writer = table_writer(source_data, output_path, has_random_id=True)
     >>> writer.transform()
     >>> writer.write_to_file()
     """
-    def __init__(self, source_data: dict, output_path:str, is_standardize: bool = True, has_random_id: bool = False):
+    def __init__(self, source_data: dict, output_path:str, is_customize: bool = False, has_random_id: bool = False):
         """
         Initializes a table_writer instance with source JSON data and configuration options.
 
         Args:
             source_data (dict): The source JSON data to transform and write.
             output_path (str): The output path for the CSV files.
-            is_standardize (bool): Flag to indicate whether to standardize the fields.
             has_random_id (bool): Flag to indicate whether to use random IDs for records.
 
         Returns: None
 
         Example: None
         """
-        super().__init__(source_data, output_path)
+        self.__is_customize = is_customize
+        if self.__is_customize:
+            super().__init__(None, output_path)
+            self.customize_data = source_data
+        else:
+            print(source_data)
+            super().__init__(source_data, output_path)
+            self.__formatted_data = {}
         self.__has_random_id = has_random_id
-        self.__is_standardize = is_standardize
-        self.__formatted_data = {}
 
     def transform(self):
         """
@@ -96,16 +99,17 @@ class table_writer(csv_transformer.csv_transformer):
         ...     }
         ... }
         >>> output_path = './test/result/table_data'
-        >>> writer = table_writer(source_data, output_path, has_random_id=True, is_standardize=True)
+        >>> writer = table_writer(source_data, output_path, has_random_id=True)
         >>> writer.transform()
         >>> # The data is transformed and prepared for writing.
         >>> writer.write_to_file()
         >>> # The data is written to separate CSV files for each table.
         """
+        if self.__is_customize == True:
+            return
+
         formatter = json_formatter.json_formatter(self.source_data,self.__has_random_id)
         formatter.json_to_object_list(self.source_data)
-        if self.__is_standardize:
-            formatter.json_list_standardize()
         self.__formatted_data = formatter.store
 
     def write_to_file(self):
@@ -122,13 +126,12 @@ class table_writer(csv_transformer.csv_transformer):
         ...     "field2": [4, 5, 6]
         ... }
         >>> output_path = './test/result/table_data'
-        >>> writer = table_writer(source_data, output_path, has_random_id=True, is_standardize=True)
+        >>> writer = table_writer(source_data, output_path, has_random_id=True)
         >>> writer.transform()
         >>> # The data is transformed and prepared for writing.
         >>> writer.write_to_file()
         >>> # The data is written to a single CSV file.
         """
-        print('tw', self.__formatted_data)
         for key,value in self.__formatted_data.items():
             with csv_file_manager.csv_file_manager(self.output_path + "/" +key + '.csv', 'w') as csv_editor:
                 if len(value)>0:
@@ -143,7 +146,66 @@ class table_writer(csv_transformer.csv_transformer):
                                         reproduce_obj[record_key] = record_value
                                         break
                             csv_editor.writerow(reproduce_obj.values())
-                                        
+        
+    @property
+    def customize_data(self):
+        if self.__is_customize == True:
+            return self.source_data
+    
+    @customize_data.setter
+    def customize_data(self, value):
+
+        if self.__is_customize == True:
+            self.source_data = value
+            self.__formatted_data = self.__check_formatted_data(self.source_data)
+
+    @property
+    def is_customize(self):
+        return self.__is_customize
+
+    @is_customize.setter
+    def is_customize(self, value:bool):
+        self.__is_customize = value
+
+    def __check_formatted_data(self, formatted_data:dict):
+        if type(formatted_data) is not dict:
+            raise TypeError("The formatted data must be a dictionary.")
+        
+        for key,value in formatted_data.items():
+            if type(value) is not list:
+                raise TypeError("The value of the formatted data must be a list.")
+            
+            key_list = []
+            for item in value:
+                if type(item) is not dict:
+                    raise TypeError("The item of the formatted data must be a dictionary.")
+
+                key_list.append(list(item.keys()))
+
+                for key_item,value_item in item.items():
+                    if type(value_item) is dict:
+                        raise TypeError("The value of the formatted data must be the specified primitive type.")
+                    elif type(value_item) is list:
+                        if self.__check_formatted_value_list(value_item) == False:
+                            raise TypeError("The value of the formatted data must be the specified primitive type.")
+            print(key_list)
+            for item in key_list:
+                for second_item in key_list:
+                    item.sort()
+                    second_item.sort()
+                    if item != second_item:
+                        raise TypeError("The key of the formatted data must be the same.")
+        return formatted_data
+
+    def __check_formatted_value_list(self, formatted_value_list:list):
+        primitive_type_judger = True
+        for item in formatted_value_list:
+            if type(item) is dict:
+                return False
+            elif type(item) is list:
+                primitive_type_judger = self.__check_formatted_value_list(item)
+
+        return primitive_type_judger
 class single_csv_writer(csv_transformer.csv_transformer):
     """
     A class for writing transformed data to a single CSV file.

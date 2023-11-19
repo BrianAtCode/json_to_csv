@@ -36,10 +36,6 @@ class json_formatter:
         - `id` (str): The record ID.
     - Returns: None
 
-    2. `json_list_standardize(self)`: 
-    - Method to standardize the formatted data to ensure consistent fields across records.
-    - Returns: None
-
     3. `flatten_json(self, nested_json, name: str = '')`: 
     - Method to flatten nested JSON data into a structured format.
     - Arguments:
@@ -55,8 +51,7 @@ class json_formatter:
     ------------------
     1. Create an instance of `json_formatter` with nested JSON data.
     2. Use the `json_to_object_list` method to transform the data into a structured format.
-    3. Use the `json_list_standardize` method to standardize the data.
-    4. Access the formatted data using the `store` property.
+    3. Access the formatted data using the `store` property.
 
     Example:
     >>> nested_data = {
@@ -71,7 +66,6 @@ class json_formatter:
     ... }
     >>> formatter = json_formatter(nested_data, random_id=True)
     >>> formatter.json_to_object_list(nested_data)
-    >>> formatter.json_list_standardize()
     >>> formatted_data = formatter.store
     """
     def __init__(self, nested_json: dict, random_id: bool = False):
@@ -95,15 +89,16 @@ class json_formatter:
         key_count = 0
         new_parent_id = parent_id if table_name != 'root' else ''
         if type(x) is dict:
+            
             json_object = {"parent_id":new_parent_id}
             json_object[table_name+'_id'] = table_name +"_"+str(len(self.__store[table_name])) if self.random_id == False else str(uuid.uuid4()) if id == None else id
-
+            
             for key,value in x.items():
-                if key == json_object[table_name+'_id']:
-                    continue
-                
                 if type(value) is dict:
-                    json_object[key] =  key+"_"+str(len(self.__store[key]))  if self.random_id == False else str(uuid.uuid4())
+                    if self.is_exist_same_record(table_name, key, value) == True:
+                        json_object[key] =  key+"_"+str(len(self.__store[key]))  if self.random_id == False else str(uuid.uuid4())
+                    else:
+                        json_object[key] =  key+"_"+str(len(self.__store[key]))  if self.random_id == False else str(uuid.uuid4())
                     self.json_to_object_list(value, key, json_object[table_name+'_id'], json_object[key])
 
                 elif type(value) is list:
@@ -116,7 +111,7 @@ class json_formatter:
                     self.json_to_object_list(value, key, json_object[key], None)
                 else:
                     json_object[key] = value
-            print('122', json_object)
+
             for key in self.json_handler.fields[table_name]:
                 if key not in json_object.keys():
                     json_object[key] = ''
@@ -144,40 +139,14 @@ class json_formatter:
 
         return None
     
-    def json_list_standardize(self):
-        """
-        Method to standardize the formatted data to ensure consistent fields across records.
-
-        Returns: None
-
-        Example: 
-        >>> source_data = {
-        ...     "table1": {
-        ...         "field1": [1, 2, 3],
-        ...         "field2": [4, 5, 6]
-        ...     }
-        ... }
-        >>> formatter = json_formatter(source_data)
-        >>> # Call the json_to_object_list method to transform the data.
-        >>> formatter.json_to_object_list(source_data, table_name='table1')
-        >>> # Call the json_list_standardize method to standardize the fields.
-        >>> formatter.json_list_standardize()
-        >>> # Access the standardized data using the store property.
-        >>> standardized_data = formatter.store
-        >>> # Verify the standardized data.
-        >>> print(standardized_data)
-        {'table1': [{'table1_id': 'table1_0', 'field1': 1, 'field2': 4}, {'table1_id': 'table1_1', 'field1': 2, 'field2': 5}, {'table1_id': 'table1_2', 'field1': 3, 'field2': 6}]}
-        """
-        print('standard item',self.__store)
-        for key, value in self.json_handler.fields.items():
-            print('key', key, 'value', value)
-            count = 0
-            for item in self.__store[key]:
-                for field in value:
-                    if type(field) is not dict or type(field) is not list:
-                        if field not in item:
-                            self.__store[key][count][field] = ''
-                count+=1
+    def is_exist_same_record(self, table_name, parent_id, current_key):
+        
+            for store in self.__store.keys():
+                if store == table_name:
+                    for value in self.__store[store]:
+                        if parent_id in value.values() and current_key in value.values():
+                            return True
+            return False
 
     def flatten_json(self, nested_json, name: str = ''):
         """
