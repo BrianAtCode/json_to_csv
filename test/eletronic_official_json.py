@@ -1,5 +1,5 @@
 import requests
-from ..lib.writer import table_writer, single_csv_writer
+from ..lib.writer import table_writer, flat_writer
 
 response = requests.post('https://www.clp.com.hk/bin/calculator/tariff/residential', json={
   "StartDate": "20231001000000",
@@ -13,6 +13,6 @@ with open('./test/src/source.json', 'w') as f:
 
 output_path = './test/result'
 with open('./test/src/source.json') as f:
-    writer = single_csv_writer(f, output_path, file_name='bill_data')
+    writer = flat_writer(f, output_path, file_name='bill_data')
     writer.transform()
     writer.write_to_file()

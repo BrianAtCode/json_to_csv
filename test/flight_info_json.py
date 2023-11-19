@@ -1,4 +1,4 @@
-from ..lib.writer import table_writer, single_csv_writer
+from ..lib.writer import table_writer, flat_writer
 
 output_path = './test/result'
 with open('./test/src/data.json') as source_file:

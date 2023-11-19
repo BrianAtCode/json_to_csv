@@ -174,6 +174,9 @@ class json_formatter:
         >>> print(flattened_data)
         {'table1_field1_0': 1, 'table1_field1_1': 2, 'table1_field1_2': 3, 'table1_field2_0': 4, 'table1_field2_1': 5, 'table1_field2_2': 6}
         """
+        if name == '':
+            self.__store = {}
+        
         if type(nested_json) is dict:
             for a in nested_json:
                 self.flatten_json(nested_json[a], name + a + '_')

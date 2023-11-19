@@ -7,7 +7,7 @@ This module provides classes for writing transformed data to CSV files.
 Classes
 ------------------
     1. `table_writer`: This class writes transformed data to separate CSV files.
-    2. `single_csv_writer`: This class writes transformed data to a single CSV file.
+    2. `flat_writer`: This class writes transformed data to a single CSV file.
 
 """
 from . import json_formatter, csv_file_manager, csv_transformer
@@ -56,7 +56,7 @@ class table_writer(csv_transformer.csv_transformer):
     >>> writer.transform()
     >>> writer.write_to_file()
     """
-    def __init__(self, source_data: dict, output_path:str, is_customize: bool = False, has_random_id: bool = False):
+    def __init__(self, source_data: dict, output_path:str, is_manual: bool = False, has_random_id: bool = False):
         """
         Initializes a table_writer instance with source JSON data and configuration options.
 
@@ -69,12 +69,11 @@ class table_writer(csv_transformer.csv_transformer):
 
         Example: None
         """
-        self.__is_customize = is_customize
-        if self.__is_customize:
+        self.__is_manual = is_manual
+        if self.__is_manual:
             super().__init__(None, output_path)
-            self.customize_data = source_data
+            self.manual_data = source_data
         else:
-            print(source_data)
             super().__init__(source_data, output_path)
             self.__formatted_data = {}
         self.__has_random_id = has_random_id
@@ -105,7 +104,7 @@ class table_writer(csv_transformer.csv_transformer):
         >>> writer.write_to_file()
         >>> # The data is written to separate CSV files for each table.
         """
-        if self.__is_customize == True:
+        if self.__is_manual == True:
             return
 
         formatter = json_formatter.json_formatter(self.source_data,self.__has_random_id)
@@ -148,24 +147,24 @@ class table_writer(csv_transformer.csv_transformer):
                             csv_editor.writerow(reproduce_obj.values())
         
     @property
-    def customize_data(self):
-        if self.__is_customize == True:
+    def manual_data(self):
+        if self.__is_manual == True:
             return self.source_data
     
-    @customize_data.setter
-    def customize_data(self, value):
+    @manual_data.setter
+    def manual_data(self, value):
 
-        if self.__is_customize == True:
+        if self.__is_manual == True:
             self.source_data = value
             self.__formatted_data = self.__check_formatted_data(self.source_data)
 
     @property
-    def is_customize(self):
-        return self.__is_customize
+    def is_manual(self):
+        return self.__is_manual
 
-    @is_customize.setter
-    def is_customize(self, value:bool):
-        self.__is_customize = value
+    @is_manual.setter
+    def is_manual(self, value:bool):
+        self.__is_manual = value
 
     def __check_formatted_data(self, formatted_data:dict):
         if type(formatted_data) is not dict:
@@ -188,7 +187,6 @@ class table_writer(csv_transformer.csv_transformer):
                     elif type(value_item) is list:
                         if self.__check_formatted_value_list(value_item) == False:
                             raise TypeError("The value of the formatted data must be the specified primitive type.")
-            print(key_list)
             for item in key_list:
                 for second_item in key_list:
                     item.sort()
@@ -206,7 +204,8 @@ class table_writer(csv_transformer.csv_transformer):
                 primitive_type_judger = self.__check_formatted_value_list(item)
 
         return primitive_type_judger
-class single_csv_writer(csv_transformer.csv_transformer):
+    
+class flat_writer(csv_transformer.csv_transformer):
     """
     A class for writing transformed data to a single CSV file.
 
@@ -230,7 +229,7 @@ class single_csv_writer(csv_transformer.csv_transformer):
 
     Typical Usage
     ------------------
-    1. Create an instance of `single_csv_writer` with source JSON data, csv data path and an optional file name.
+    1. Create an instance of `flat_writer` with source JSON data, csv data path and an optional file name.
     2. Call the `transform` method to transform and format the data.
     3. Call the `write_to_file` method to write the data to a single CSV file.
 
@@ -240,13 +239,13 @@ class single_csv_writer(csv_transformer.csv_transformer):
     ...     "field2": [4, 5, 6]
     ... }
     >>> output_path = 'output_data/data'
-    >>> writer = single_csv_writer(source_data, output_path, file_name='output_data')
+    >>> writer = flat_writer(source_data, output_path, file_name='output_data')
     >>> writer.transform()
     >>> writer.write_to_file()
     """
     def __init__(self, source_data, output_path, file_name = 'default'):
         """
-        Initializes a single_csv_writer instance with source JSON data and an optional file name.
+        Initializes a flat_writer instance with source JSON data and an optional file name.
 
         Args:
             source_data: The source JSON data to transform and write.
@@ -281,7 +280,7 @@ class single_csv_writer(csv_transformer.csv_transformer):
         ...     }
         ... }
         >>> output_path = 'output_data/data'
-        >>> writer = single_csv_writer(source_data, output_path, file_name='output_data')
+        >>> writer = flat_writer(source_data, output_path, file_name='output_data')
         >>> writer.transform()
         >>> # The data is transformed and prepared for writing.
         >>> writer.write_to_file()
@@ -305,7 +304,7 @@ class single_csv_writer(csv_transformer.csv_transformer):
         ...     "field2": [4, 5, 6]
         ... }
         ... output_path = 'output_data/data'
-        >>> writer = single_csv_writer(source_data, output_path, file_name='output_data')
+        >>> writer = flat_writer(source_data, output_path, file_name='output_data')
         >>> writer.transform()
         >>> # The data is transformed and prepared for writing.
         >>> writer.write_to_file()

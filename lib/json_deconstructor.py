@@ -141,7 +141,6 @@ class json_deconstructor:
                         list_count += 1
 
         def load_fields(nested_json, name='root'):
-            print('load field', self.__tables, name)
             #if name not in self.__tables.keys():
             #    return
             if type(nested_json) is dict:
@@ -206,15 +205,13 @@ class json_deconstructor:
 
             return list(keys)
         load_table(nested_json)
-        print('tables', self.__tables)
         load_fields(nested_json)
-        print('fields', self.__fields)
     
     def check_pattern(self, nested_json):
         if type(nested_json) is dict:
             for key, value in nested_json.items():
                 if isinstance(value, list):
-                    print (value)
+                    #print (value)
                     if self.is_same_pattern(value) == False:
                         raise Exception("The nested JSON data is not in the same pattern.")
                     else:
@@ -226,7 +223,7 @@ class json_deconstructor:
                 if isinstance(item, dict):
                     self.check_pattern(item)
                 elif isinstance(item, list):
-                    print ("list in",item)
+                    #print ("list in",item)
                     if self.is_same_pattern(item) == False:
                         raise Exception("The nested JSON data is not in the same pattern.")
                     else:
@@ -234,9 +231,9 @@ class json_deconstructor:
         
 
     def is_same_pattern(self, json_list):
-        print("is_same", isinstance(json_list, list), not json_list, type(json_list),isinstance(json_list, list))
+        #print("is_same", isinstance(json_list, list), not json_list, type(json_list),isinstance(json_list, list))
         if not isinstance(json_list, list):
-            print("eeeee", not json_list, not isinstance(json_list, list))
+            #print("eeeee", not json_list, not isinstance(json_list, list))
             return False
 
         pattern = None
